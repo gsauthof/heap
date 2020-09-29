@@ -28,6 +28,18 @@ static bool is_heap_min_intP(std::vector<int> &v)
 {
     return gms::heap::is_heap(v.data(), 0, v.size(), gms::heap::Min<int>());
 }
+static std::vector<int> insert_max_intP(std::vector<int> &v, int x)
+{
+    v.push_back(x);
+    gms::heap::insert(v.data(), v.size()-1);
+    return v;
+}
+static std::vector<int> remove_max_intP(std::vector<int> &v, size_t i)
+{
+    gms::heap::remove(v.data(), i, v.size());
+    v.resize(v.size()-1);
+    return v;
+}
 
 PYBIND11_MODULE(heap, m) {
     m.doc() = "test heap functions";
@@ -35,4 +47,6 @@ PYBIND11_MODULE(heap, m) {
     m.def("is_heap_max_int", &is_heap_max_intP, "check max-heap property");
     m.def("build_min_int", &build_min_intP, "build min-heap of ints");
     m.def("is_heap_min_int", &is_heap_min_intP, "check min-heap property");
+    m.def("insert_max_int", &insert_max_intP, "insert into max-heap");
+    m.def("remove_max_int", &remove_max_intP, "remove from max-heap");
 }
