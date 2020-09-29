@@ -104,13 +104,15 @@ GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t *n,
 
     size_t j = *n - 1;
 
-    bool is_gt = gt(p, j, i);
-    mv(p, i, j, user);
+    if (i != j) {
+        bool is_gt = gt(p, j, i);
+        mv(p, i, j, user);
 
-    if (is_gt) {
-        gms_heap_ify_up(p, i, gt, swap, user);
-    } else {
-        gms_heap_ify(p, i, *n, gt, swap, user);
+        if (is_gt) {
+            gms_heap_ify_up(p, i, gt, swap, user);
+        } else {
+            gms_heap_ify(p, i, *n, gt, swap, user);
+        }
     }
     --*n;
 }
