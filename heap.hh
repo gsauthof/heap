@@ -87,9 +87,9 @@ namespace gms {
             }
         template<typename T, typename Cmp, typename Swap>
             inline
-            void insert(T *p, size_t &n, Cmp, Swap)
+            void insert(T *p, size_t &n, Cmp, Swap, void *user)
             {
-                gms_heap_insert(p, &n, Cmp::cmp, Swap::swap, nullptr);
+                gms_heap_insert(p, &n, Cmp::cmp, Swap::swap, user);
             }
 
         template<typename T>
@@ -101,10 +101,10 @@ namespace gms {
             }
         template<typename T, typename Cmp, typename Move, typename Swap>
             inline
-            void remove(T *p, size_t i, size_t &n, Cmp, Move, Swap)
+            void remove(T *p, size_t i, size_t &n, Cmp, Move, Swap, void *user)
             {
                 gms_heap_remove(p, i, &n, Cmp::cmp, Move::move,
-                        Swap::swap, nullptr);
+                        Swap::swap, user);
             }
 
     }
