@@ -40,9 +40,9 @@ GMS_HEAP_STATIC bool gms_heap_is_heap(void *p, size_t i, size_t n,
 GMS_HEAP_STATIC void gms_heap_build  (void *p, size_t n,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user);
 
-GMS_HEAP_STATIC void gms_heap_insert (void *p, size_t *n,
+GMS_HEAP_STATIC void gms_heap_insert (void *p, size_t n,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user);
-GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t *n,
+GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t n,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Move_Func mv, Gms_Heap_Swap_Func swap,
         void *user);
 

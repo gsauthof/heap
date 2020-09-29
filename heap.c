@@ -96,32 +96,30 @@ GMS_HEAP_STATIC bool gms_heap_is_heap(void *p, size_t i, size_t n,
     return true;
 }
 
-GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t *n,
+GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t n,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Move_Func mv, Gms_Heap_Swap_Func swap,
         void *user)
 {
-    //assert(i < *n);
+    //assert(i < n);
 
-    size_t j = *n - 1;
+    size_t j = n - 1;
 
-    if (i != j) {
-        bool is_gt = gt(p, j, i);
-        mv(p, i, j, user);
+    if (i == j)
+        return;
 
-        if (is_gt) {
-            gms_heap_ify_up(p, i, gt, swap, user);
-        } else {
-            gms_heap_ify(p, i, *n, gt, swap, user);
-        }
+    bool is_gt = gt(p, j, i);
+    mv(p, i, j, user);
+
+    if (is_gt) {
+        gms_heap_ify_up(p, i, gt, swap, user);
+    } else {
+        gms_heap_ify(p, i, n, gt, swap, user);
     }
-    --*n;
 }
 
-GMS_HEAP_STATIC void gms_heap_insert(void *p, size_t *n,
+GMS_HEAP_STATIC void gms_heap_insert(void *p, size_t n,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user)
 {
-    size_t i = *n;
-    ++*n;
-    gms_heap_ify_up(p, i, gt, swap, user);
+    gms_heap_ify_up(p, n, gt, swap, user);
 }
 

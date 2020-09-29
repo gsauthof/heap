@@ -43,7 +43,7 @@ namespace gms {
             };
         template<typename T>
             struct Move {
-                static void move(void *p, size_t i, size_t j, void *user)
+                static void move(void *p, size_t i, size_t j, void *)
                 {
                     T *a = static_cast<T*>(p) + i;
                     T *b = static_cast<T*>(p) + j;
@@ -81,29 +81,29 @@ namespace gms {
 
         template<typename T>
             inline
-            void insert(T *p, size_t &n)
+            void insert(T *p, size_t n)
             {
-                gms_heap_insert(p, &n, Max<T>::cmp, Swap<T>::swap, nullptr);
+                gms_heap_insert(p, n, Max<T>::cmp, Swap<T>::swap, nullptr);
             }
         template<typename T, typename Cmp, typename Swap>
             inline
-            void insert(T *p, size_t &n, Cmp, Swap, void *user)
+            void insert(T *p, size_t n, Cmp, Swap, void *user)
             {
-                gms_heap_insert(p, &n, Cmp::cmp, Swap::swap, user);
+                gms_heap_insert(p, n, Cmp::cmp, Swap::swap, user);
             }
 
         template<typename T>
             inline
-            void remove(T *p, size_t i, size_t &n)
+            void remove(T *p, size_t i, size_t n)
             {
-                gms_heap_remove(p, i, &n, Max<T>::cmp, Move<T>::move,
+                gms_heap_remove(p, i, n, Max<T>::cmp, Move<T>::move,
                         Swap<T>::swap, nullptr);
             }
         template<typename T, typename Cmp, typename Move, typename Swap>
             inline
-            void remove(T *p, size_t i, size_t &n, Cmp, Move, Swap, void *user)
+            void remove(T *p, size_t i, size_t n, Cmp, Move, Swap, void *user)
             {
-                gms_heap_remove(p, i, &n, Cmp::cmp, Move::move,
+                gms_heap_remove(p, i, n, Cmp::cmp, Move::move,
                         Swap::swap, user);
             }
 
