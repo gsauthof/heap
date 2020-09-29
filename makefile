@@ -9,6 +9,7 @@ CXXFLAGSW_GCC = -Wall -Wextra -Wno-missing-field-initializers \
     -Werror=multichar -Werror=sizeof-pointer-memaccess -Werror=return-type \
     -Werror=delete-non-virtual-dtor \
     -fstrict-aliasing
+#CXXFLAGSO = -Og -fsanitize=address -g
 CXXFLAGSO = -O2
 
 CXXFLAGS += $(CXXFLAGSW_GCC)
@@ -26,6 +27,9 @@ heap$(PY_EXT_SUFFIX): pyheap.cc heap.h heap.c heap.hh
 	$(CXX) $(PYBIND11_CPPFLAGS) $(CXXFLAGS) -shared -fPIC $< -o $@
 
 TEMP += heap$(PY_EXT_SUFFIX)
+
+example/array_remove: example/array_remove.cc heap.hh heap.h heap.c
+	$(CXX) -o $@ $(CPPFLAGS) $(CXXFLAGS) $<
 
 .PHONY: check
 check: heap$(PY_EXT_SUFFIX)
