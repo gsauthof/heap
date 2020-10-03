@@ -11,6 +11,7 @@ CXXFLAGSW_GCC = -Wall -Wextra -Wno-missing-field-initializers \
     -fstrict-aliasing
 #CXXFLAGSO = -Og -fsanitize=address -g
 CXXFLAGSO = -O2
+#CXXFLAGSO = -g
 
 CXXFLAGS += $(CXXFLAGSW_GCC)
 CXXFLAGS += $(CXXFLAGSO)

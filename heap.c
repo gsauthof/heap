@@ -4,49 +4,152 @@
 #include <stdint.h> // SIZE_MAX
 
 #include "heap.h"
+#include "int_math.h"
+
+enum { CHILD, PARENT };
+
+GMS_HEAP_STATIC size_t gms_heap_parent_k(size_t i, size_t k)
+{
+    return (i - 1) / k;
+}
+
+// returns left child
+// +1 for the right child, etc.
+GMS_HEAP_STATIC size_t gms_heap_child_k(size_t i, size_t k)
+{
+    return k * i + 1;
+}
+
+GMS_HEAP_STATIC size_t gms_heap_parent(size_t i)
+{
+    return gms_heap_parent_k(i, 2);
+}
+
+// returns left child
+// +1 for the right child
+GMS_HEAP_STATIC size_t gms_heap_child(size_t i)
+{
+    return gms_heap_child_k(i, 2);
+}
+
+GMS_HEAP_STATIC size_t gms_heap_idx(bool lookup_parent, size_t i)
+{
+    if (lookup_parent)
+        return gms_heap_parent(i);
+    else
+        return gms_heap_child(i);
+}
+
+GMS_HEAP_STATIC size_t gms_heap_level_start_k(size_t i, size_t k)
+{
+    size_t level = logk_zu(k, (k-1) * i + 1);
+
+    //size_t r = (pow_zu(k, level+1) - k) / (k * k - k);
+    // <=>
+    size_t r = (pow_zu(k, level) - 1) / (k - 1);
+
+    return r;
+}
+
+// we are assuming sane sizes here, i.e. page_size and element size
+// are a power of two
+// NB: - page size is specified in #elements that fit into a page
+//     - i indexes elements (not bytes)
+//     - for the first page: the last element isn't used
+//     - for other pages: the first and last element aren't used
+GMS_HEAP_STATIC size_t gms_bheap_child(size_t i, size_t page_size)
+{
+    size_t next_page_start = (i / page_size + 1) * page_size;
+
+    size_t c = gms_heap_child(i);
+    if (c  + 1 < next_page_start)
+        return c;
+
+    // /2 -> we put both siblings into one page
+    size_t next_level_off = (c - (page_size - 1)) / 2;
+    size_t page = i / page_size;
+
+    // #leaves in the last level of the page
+    size_t page_leaves = page_size / 2;
+
+    size_t k = gms_heap_child_k(page, page_leaves);
+
+    // skip root node element in that page
+    size_t x = (k + next_level_off) * page_size + 1;
+
+    return x;
+}
+
+
+GMS_HEAP_STATIC size_t gms_bheap_parent(size_t iP, size_t page_size)
+{
+    size_t page = iP / page_size;
+    size_t page_start = page * page_size;
+
+    size_t i = iP - page_start;
+
+    size_t p = gms_heap_parent(i);
+    if (p || !page)
+        return page_start + p;
+
+    size_t page_leaves = page_size / 2;
+
+    size_t q = gms_heap_parent_k(page, page_leaves);
+
+    // alternative: have the offset in the first element of that page stored
+    // such that we can just look it up here
+    size_t off = page - gms_heap_level_start_k(page, page_leaves);
+
+    size_t x = q * page_size + page_size - 1 - page_leaves + off;
+
+    return x;
+}
+
+GMS_HEAP_STATIC size_t gms_heap_next(size_t i)
+{
+    return i + 1;
+}
+
+GMS_HEAP_STATIC size_t gms_bheap_next(size_t i, size_t page_size)
+{
+    ++i;
+    size_t k = i % page_size;
+    if (!k)
+        ++i;
+    else if (k + 1 == page_size)
+        i += 2;
+    return i;
+}
 
 
 GMS_HEAP_STATIC void gms_heap_ify(void *p, size_t i, size_t n,
+        Gms_Heap_Idx_Func idx,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user)
 {
     if (n < 2)
         return;
 
-    size_t last = n / 2 - 1;
-
-    // assert(i <= last);
-
-    while (i < last) {
+    for (;;) {
         size_t maxi = i;
-        size_t l    = gms_heap_child(i);
+        size_t l    = idx(CHILD, i);
         size_t r    = l + 1;
-        if (gt(p, l, i))
+        if (l < n && gt(p, l, i))
             maxi = l;
-        if (gt(p, r, maxi))
+        if (r < n && gt(p, r, maxi))
             maxi = r;
         if (maxi == i)
             return;
         swap(p, i, maxi, user);
         i = maxi;
     }
-    if (i == last) {
-        size_t maxi = i;
-        size_t l    = gms_heap_child(i);
-        size_t r    = l + 1;
-        if (gt(p, l, i))
-            maxi = l;
-        if (r < n && gt(p, r, maxi))
-            maxi = r;
-        if (maxi != i)
-            swap(p, i, maxi, user);
-    }
 }
 
 GMS_HEAP_STATIC void gms_heap_ify_up(void *p, size_t i,
+        Gms_Heap_Idx_Func idx,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user)
 {
     while (i > 0) {
-        size_t j = gms_heap_parent(i);
+        size_t j = idx(PARENT, i);
         if (gt(p, i, j)) {
             swap(p, i, j, user);
             i = j;
@@ -63,7 +166,7 @@ GMS_HEAP_STATIC void gms_heap_build(void *p, size_t n,
         return;
 
     for (size_t i = n / 2 - 1; i != SIZE_MAX; --i)
-        gms_heap_ify(p, i, n, gt, swap, user);
+        gms_heap_ify(p, i, n, gms_heap_idx, gt, swap, user);
 }
 
 
@@ -97,6 +200,7 @@ GMS_HEAP_STATIC bool gms_heap_is_heap(void *p, size_t i, size_t n,
 }
 
 GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t n,
+        Gms_Heap_Idx_Func idx,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Move_Func mv, Gms_Heap_Swap_Func swap,
         void *user)
 {
@@ -110,14 +214,15 @@ GMS_HEAP_STATIC void gms_heap_remove(void *p, size_t i, size_t n,
     mv(p, i, n, user);
 
     if (is_gt)
-        gms_heap_ify_up(p, i, gt, swap, user);
+        gms_heap_ify_up(p, i, idx, gt, swap, user);
     else
-        gms_heap_ify(p, i, n, gt, swap, user);
+        gms_heap_ify(p, i, n, idx, gt, swap, user);
 }
 
 GMS_HEAP_STATIC void gms_heap_insert(void *p, size_t n,
+        Gms_Heap_Idx_Func idx,
         Gms_Heap_Cmp_Func gt, Gms_Heap_Swap_Func swap, void *user)
 {
-    gms_heap_ify_up(p, n, gt, swap, user);
+    gms_heap_ify_up(p, n, idx, gt, swap, user);
 }
 
