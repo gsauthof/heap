@@ -26,7 +26,6 @@ GMS_HEAP_STATIC size_t gms_heap_parent(size_t i);
 GMS_HEAP_STATIC size_t gms_heap_child(size_t i);
 GMS_HEAP_STATIC size_t gms_heap_idx(bool lookup_parent, size_t i);
 
-GMS_HEAP_STATIC size_t gms_heap_level_start_k(size_t i, size_t k);
 GMS_HEAP_STATIC size_t gms_bheap_child(size_t i, size_t page_size);
 GMS_HEAP_STATIC size_t gms_bheap_parent(size_t iP, size_t page_size);
 

@@ -4,7 +4,6 @@
 #include <stdint.h> // SIZE_MAX
 
 #include "heap.h"
-#include "int_math.h"
 
 enum { CHILD, PARENT };
 
@@ -38,17 +37,6 @@ GMS_HEAP_STATIC size_t gms_heap_idx(bool lookup_parent, size_t i)
         return gms_heap_parent(i);
     else
         return gms_heap_child(i);
-}
-
-GMS_HEAP_STATIC size_t gms_heap_level_start_k(size_t i, size_t k)
-{
-    size_t level = logk_zu(k, (k-1) * i + 1);
-
-    //size_t r = (pow_zu(k, level+1) - k) / (k * k - k);
-    // <=>
-    size_t r = (pow_zu(k, level) - 1) / (k - 1);
-
-    return r;
 }
 
 // we are assuming sane sizes here, i.e. page_size and element size
@@ -99,9 +87,7 @@ GMS_HEAP_STATIC size_t gms_bheap_parent(size_t iP, size_t page_size)
 
     size_t q = gms_heap_parent_k(page, page_leaves);
 
-    // alternative: have the offset in the first element of that page stored
-    // such that we can just look it up here
-    size_t off = page - gms_heap_level_start_k(page, page_leaves);
+    size_t off = (page - 1) % page_leaves;
 
     size_t x = q * page_size + page_size - 1 - page_leaves + off;
 
