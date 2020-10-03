@@ -60,10 +60,10 @@ GMS_HEAP_STATIC size_t gms_bheap_child(size_t iP, size_t page_size)
     // /2 -> we put both siblings into one page
     size_t next_level_off = (c - (page_size - 1)) / 2;
 
-    // #leaves in the last level of the page
-    size_t page_leaves = page_size / 2;
+    // #elements in the last level of the page
+    size_t page_ways = page_size / 2;
 
-    size_t k = gms_heap_child_k(page, page_leaves);
+    size_t k = gms_heap_child_k(page, page_ways);
 
     // skip root node element in that page
     size_t x = (k + next_level_off) * page_size + 1;
@@ -83,13 +83,13 @@ GMS_HEAP_STATIC size_t gms_bheap_parent(size_t iP, size_t page_size)
     if (p || !page)
         return page_start + p;
 
-    size_t page_leaves = page_size / 2;
+    size_t page_ways = page_size / 2;
 
-    size_t q = gms_heap_parent_k(page, page_leaves);
+    size_t q = gms_heap_parent_k(page, page_ways);
 
-    size_t off = (page - 1) % page_leaves;
+    size_t off = (page - 1) % page_ways;
 
-    size_t x = q * page_size + page_size - 1 - page_leaves + off;
+    size_t x = q * page_size + page_size - 1 - page_ways + off;
 
     return x;
 }
