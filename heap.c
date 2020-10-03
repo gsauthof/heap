@@ -57,17 +57,20 @@ GMS_HEAP_STATIC size_t gms_heap_level_start_k(size_t i, size_t k)
 //     - i indexes elements (not bytes)
 //     - for the first page: the last element isn't used
 //     - for other pages: the first and last element aren't used
-GMS_HEAP_STATIC size_t gms_bheap_child(size_t i, size_t page_size)
+GMS_HEAP_STATIC size_t gms_bheap_child(size_t iP, size_t page_size)
 {
-    size_t next_page_start = (i / page_size + 1) * page_size;
+    size_t page = iP / page_size;
+    size_t page_start = page * page_size;
+    size_t next_page_start = (page + 1) * page_size;
+
+    size_t i = iP - page_start;
 
     size_t c = gms_heap_child(i);
     if (c  + 1 < next_page_start)
-        return c;
+        return page_start + c;
 
     // /2 -> we put both siblings into one page
     size_t next_level_off = (c - (page_size - 1)) / 2;
-    size_t page = i / page_size;
 
     // #leaves in the last level of the page
     size_t page_leaves = page_size / 2;
