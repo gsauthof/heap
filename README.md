@@ -1,10 +1,22 @@
-This repository contains a C/C++ [binary heap][heap] implementation which
-can be used for a priority-queue, for example.
+This repository contains a C/C++ [binary heap][heap]
+library which can be used for a priority-queue, for
+example.
 
 Besides the standard operations, this implementation also
 provides a remove operation and an interface that allows to store
 and maintain an element's heap position in a referenced object
 (i.e. to allow efficient removal).
+
+Several aspects of this library are configurable, e.g. the
+comparison and swap operations. In addition, the addressing in
+the implicit binary-tree data structure is configurable as well.
+This library includes 2 addressing schemes: the [standard
+binary-tree addressing][1] and [B-Heap style addressing][2]. The
+latter is beneficial in heaps that span several memory pages
+because it reduces the number of accessed pages in vertical tree
+traversals.
+
+2020, Georg Sauthoff <mail@gms.tf>
 
 ## Design
 
@@ -57,3 +69,6 @@ For the tests: [python3-pybind11][pyb]
 [pyb]: https://github.com/pybind/pybind11
 [pyt]: https://docs.pytest.org/en/stable/
 [heap]: https://en.wikipedia.org/wiki/Binary_heap
+
+[1]: https://en.wikipedia.org/wiki/Binary_tree#Arrays
+[2]: https://en.wikipedia.org/wiki/B-heap
